@@ -319,6 +319,80 @@
         .step-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
         .step-card p { color: var(--muted); font-size: .86rem; line-height: 1.8; margin: 0; }
 
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+        }
+
+        .testimonial-card {
+            position: relative;
+            background: #fff;
+            border: 1px solid rgba(84, 115, 59, 0.12);
+            border-radius: 20px;
+            padding: 26px 24px 22px;
+            box-shadow: 0 14px 34px rgba(31, 42, 36, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow: hidden;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .testimonial-card::before {
+            content: "”";
+            position: absolute;
+            top: 4px;
+            left: 18px;
+            font-family: Georgia, serif;
+            font-size: 4.4rem;
+            line-height: 1;
+            color: rgba(84, 115, 59, 0.12);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 44px rgba(31, 42, 36, 0.1);
+        }
+
+        .testimonial-stars {
+            color: #d9a441;
+            font-size: 1.05rem;
+            letter-spacing: .18em;
+            position: relative;
+        }
+
+        .testimonial-text {
+            margin: 0;
+            color: #4d5b53;
+            font-size: .9rem;
+            line-height: 1.9;
+            flex: 1;
+        }
+
+        .testimonial-person {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(84, 115, 59, 0.18);
+        }
+
+        .testimonial-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dfeedd, #f4ead1);
+            color: var(--green-dark);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .testimonial-person strong { display: block; font-size: .92rem; font-weight: 800; }
+        .testimonial-person span { color: var(--muted); font-size: .76rem; }
+
         .cta-band {
             margin-top: 54px;
             border-radius: 26px;
@@ -516,6 +590,54 @@
                         <h3>أتمم طلبك</h3>
                         <p>سجّل الدخول وأكد الطلب ليصل مباشرة إلى المتجر المختص.</p>
                     </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-head">
+                    <div>
+                        <span class="eyebrow">ثقة عملائنا</span>
+                        <h2>آراء العملاء والمشترين</h2>
+                        <p>تجارب حقيقية من متسوّقين وأصحاب متاجر على منصة طلباتي.</p>
+                    </div>
+                </div>
+
+                <div class="testimonial-grid">
+                    <article class="testimonial-card">
+                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
+                        <p class="testimonial-text">طلبت من ثلاثة متاجر مختلفة ووصلتني الطلبات بسرعة وبتغليف مرتب. تجربة سهلة، وسلة الشراء وفّرت عليّ الكثير من الوقت.</p>
+                        <div class="testimonial-person">
+                            <span class="testimonial-avatar" aria-hidden="true">ن</span>
+                            <div>
+                                <strong>نورة الأنصاري</strong>
+                                <span>مشترية — المنامة</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="testimonial-card">
+                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
+                        <p class="testimonial-text">أجمل ما في طلباتي أن كل المتاجر المحلية في مكان واحد. الأسعار واضحة بالدينار البحريني والطلب يصل مباشرة إلى المتجر دون وسطاء.</p>
+                        <div class="testimonial-person">
+                            <span class="testimonial-avatar" aria-hidden="true">ي</span>
+                            <div>
+                                <strong>يوسف الدوسري</strong>
+                                <span>مشترٍ — الرفاع</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="testimonial-card">
+                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
+                        <p class="testimonial-text">فتحت متجري خلال دقائق وبدأت أستقبل الطلبات في اليوم نفسه. لوحة البائع بسيطة وتسهّل متابعة المنتجات والطلبات أولاً بأول.</p>
+                        <div class="testimonial-person">
+                            <span class="testimonial-avatar" aria-hidden="true">م</span>
+                            <div>
+                                <strong>مريم الخال</strong>
+                                <span>صاحبة متجر — المحرق</span>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </section>
 
