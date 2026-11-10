@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مبيعات وتوزيع الأسر المنتجة</title>
+    <!-- مكتبة الأيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --success-color: #2ECC71;
+            --danger-color: #E74C3C;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-success { background-color: var(--success-color); }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn:hover { opacity: 0.9; }
+
+        .stats-box {
+            background-color: #f8fafc;
+            border-right: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .list-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .sales-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .sale-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .sale-item:last-child { border-bottom: none; }
+
+        .sale-info {
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .phone-badge {
+            font-size: 0.8rem;
+            color: #555;
+            background-color: #eef2f7;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 5px 8px;
+            font-size: 1rem;
+        }
+
+        /* تنسيقات الشاشة أثناء الطباعة */
+        @media print {
+            .form-group, .btn-container, h2, .delete-btn {
+                display: none !important;
+            }
+            body {
+                background-color: #fff;
+                padding: 0;
+            }
+            .dashboard-container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .sales-list {
+                max-height: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <h2>🛒 نظام إدارة مبيعات وتوزيع الأسر المنتجة</h2>
+        
+        <div class="form-group">
+            <label>اسم الزبون:</label>
+            <input type="text" id="customerName" placeholder="مثال: أم أحمد">
+        </div>
+
+        <div class="form-group">
+            <label>رقم هاتف الزبون:</label>
+            <input type="text" id="customerPhone" placeholder="مثال: 39xxxxxx">
+        </div>
+
+        <div class="form-group">
+            <label>اسم المنتج:</label>
+            <input type="text" id="productName" placeholder="اكتبي اسم المنتج هنا">
+        </div>
+
+        <div class="form-group">
+            <label>السعر (د.ب):</label>
+            <input type="number" id="productPrice" step="0.001" placeholder="0.000">
+        </div>
+
+        <div class="form-group">
+            <label>الكمية المبيعة:</label>
+            <input type="number" id="productQty" value="1" min="1">
+        </div>
+
+        <div class="form-group">
+            <label>حالة التوصيل والتوزيع الحالية:</label>
+            <select id="deliveryStatus">
+                <option value="⏳ قيد التجهيز بالمنزل">⏳ قيد التجهيز بالمنزل</option>
+                <option value="🚗 مع المندوب للتوصيل">🚗 مع المندوب للتوصيل</option>
+                <option value="✅ تم التوصيل والاستلام">✅ تم التوصيل والاستلام</option>
+            </select>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn btn-success" onclick="registerSale()"><i class="fa-solid fa-plus"></i> تسجيل البيعة</button>
+            <button class="btn btn-primary" onclick="printInvoice()"><i class="fa-solid fa-print"></i> طباعة الفاتورة</button>
+            <button class="btn btn-danger" onclick="clearData()"><i class="fa-solid fa-trash"></i> يوم جديد</button>
+        </div>
+
+        <div class="stats-box">
+            <span>👥 إجمالي عدد الزبائن اليوم:</span>
+            <span id="totalCustomers">0 زبائن</span>
+        </div>
+
+        <div class="list-title">قائمة المبيعات والتوزيع التفصيلية:</div>
+        <div class="sales-list" id="salesList">
+            <!-- المبيعات المضافة ستظهر هنا تلقائياً -->
+        </div>
+
+        <div class="stats-box" style="border-right-color: #f1c40f; margin-top: 15px;">
+            <span>💰 إجمالي المبيعات الكلية:</span>
+            <span id="totalSales">0.000 د.ب</span>
+        </div>
+    </div>
+
+    <script>
+        let sales = JSON.parse(localStorage.getItem('talabati_sales')) || [];
+
+        const statuses = [
+            "⏳ قيد التجهيز بالمنزل",
+            "🚗 مع المندوب للتوصيل",
+            "✅ تم التوصيل والاستلام"
+        ];
+
+        function updateUI() {
+            const list = document.getElementById('salesList');
+            list.innerHTML = '';
+            let totalMoney = 0;
+            
+            // حساب عدد الزبائن الفريدين
+            const uniqueCustomers = new Set(sales.map(s => s.customer.trim().toLowerCase()));
+
+            sales.forEach((item, index) => {
+                let itemTotal = item.price * item.qty;
+                totalMoney += itemTotal;
+
+                // التنسيق الخاص برقم الهاتف
+                let phoneDisplay = item.phone ? `<span class="phone-badge"><i class="fa-solid fa-phone"></i> ${item.phone}</span>` : '';
+
+                let row = document.createElement('div');
+                row.className = 'sale-item';
+                row.innerHTML = `
+                    <div class="sale-info" onclick="cycleStatus(${index})" title="اضغطي لتغيير حالة التوصيل">
+                        <strong>${item.customer}</strong> ${phoneDisplay} - ${item.product} (${item.qty} قطع)
+                        <br>
+                        <small style="color: #666;">${itemTotal.toFixed(3)} د.ب [${item.status}]</small>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSale(${index})" title="حذف الطلب">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                list.appendChild(row);
+            });
+
+            document.getElementById('totalCustomers').innerText = `${uniqueCustomers.size} زبائن`;
+            document.getElementById('totalSales').innerText = `${totalMoney.toFixed(3)} د.ب`;
+            localStorage.setItem('talabati_sales', JSON.stringify(sales));
+        }
+
+        function registerSale() {
+            const customer = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const product = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value) || 0;
+            const qty = parseInt(document.getElementById('productQty').value) || 1;
+            const status = document.getElementById('deliveryStatus').value;
+
+            if (!customer || !product) {
+                alert('الرجاء إدخال اسم الزبون واسم المنتج على الأقل!');
+                return;
+            }
+
+            sales.push({ customer, phone, product, price, qty, status });
+            updateUI();
+
+            // إعادة تعيين الحقول
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productQty').value = '1';
+        }
+
+        function cycleStatus(index) {
+            let currentIndex = statuses.indexOf(sales[index].status);
+            let nextIndex = (currentIndex + 1) % statuses.length;
+            sales[index].status = statuses[nextIndex];
+            updateUI();
+        }
+
+        function deleteSale(index) {
+            if (confirm('هل أنتِ متأكدة من حذف هذا الطلب؟')) {
+                sales.splice(index, 1);
+                updateUI();
+            }
+        }
+
+        function printInvoice() {
+            if (sales.length === 0) {
+                alert('لا توجد مبيعات لطباعة فاتورتها!');
+                return;
+            }
+            window.print();
+        }
+
+        function clearData() {
+            if (confirm('هل أنتِ متأكدة من تصفير البيانات وبدء يوم جديد؟')) {
+                sales = [];
+                updateUI();
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>

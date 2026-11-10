@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلباتي</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        :root { --green: #54733b; --ink: #1f2a24; --muted: #718078; --line: #e1e9de; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 22px; min-height: 100vh; background: radial-gradient(circle at top right, #e4efdc 0, transparent 32%), #fbfaf5; color: var(--ink); font-family: Cairo, Segoe UI, sans-serif; }
+        main { max-width: 760px; margin: 0 auto; }
+        nav { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+        nav a { color: var(--green); font-weight: 800; text-decoration: none; }
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 28px; box-shadow: 0 18px 40px #30493612; }
+        h1 { margin: 0 0 6px; color: var(--green); }
+        .intro, .muted { color: var(--muted); }
+        .order { margin-top: 18px; padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #f8faf6; }
+        .order-head { display: flex; justify-content: space-between; gap: 12px; font-weight: 800; }
+        .status { color: var(--green); }
+        .item { display: flex; justify-content: space-between; gap: 10px; padding-top: 9px; color: var(--muted); }
+        .empty { padding: 28px 0; text-align: center; color: var(--muted); }
+        .login { display: inline-block; margin-top: 12px; padding: 11px 16px; border-radius: 9px; background: var(--green); color: #fff; text-decoration: none; font-weight: 700; }
+        @media (max-width: 560px) { .panel { padding: 20px; } .order-head { align-items: flex-start; flex-direction: column; } }
+    </style>
+</head>
+<body>
+<main>
+    <nav><a href="index.html">الرئيسية</a><a href="products.html">المنتجات</a><a href="cart.html">السلة</a></nav>
+    <section class="panel">
+        <h1>طلباتي</h1>
+        <p class="intro">تابع حالة طلباتك وتفاصيل المنتجات التي اشتريتها.</p>
+        <div id="orders"><p class="empty">جارٍ تحميل الطلبات...</p></div>
+    </section>
+</main>
+<script>
+    const labels = { pending: 'قيد الانتظار', preparing: 'قيد التجهيز', shipped: 'تم الشحن', delivered: 'تم التوصيل', cancelled: 'ملغى' };
+    const money = value => `${Number(value).toFixed(3)} د.ب`;
+    async function loadOrders() {
+        const response = await fetch('/api/my-orders');
+        if (response.status === 401) {
+            document.getElementById('orders').innerHTML = '<p class="empty">سجّل الدخول لمشاهدة طلباتك.<br><a class="login" href="login.html?next=my-orders.html">تسجيل الدخول</a></p>';
+            return;
+        }
+        const orders = await response.json();
+        document.getElementById('orders').innerHTML = orders.length ? orders.map(order => `<article class="order"><div class="order-head"><span>طلب #${order.id}</span><span class="status">${labels[order.status] || order.status}</span><span>${money(order.total)}</span></div>${order.items.map(item => `<div class="item"><span>${item.product.name} · ${item.product.store.name}</span><span>${item.quantity} × ${money(item.price)}</span></div>`).join('')}</article>`).join('') : '<p class="empty">لا توجد طلبات حتى الآن.</p>';
+    }
+    loadOrders().catch(() => { document.getElementById('orders').innerHTML = '<p class="empty">تعذر تحميل الطلبات حاليًا.</p>'; });
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("buyer")
+  createdAt    DateTime @default(now())
+
+  // back-relation to Store (optional)
+  store        Store?     @relation("StoreOwner")
+  orders       Order[]    @relation("UserOrders")
+  feedbacks    Feedback[]
+}
+
+model Store {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  themeColor  String?   @default("#54733b")
+  accentColor String?   @default("#dfeedd")
+  logoUrl     String?
+  description String?
+  status             String    @default("active") // active | suspended
+  subscriptionPlan   String    @default("free") // free | bronze | silver | gold
+  subscriptionEndsAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  // owner relation (one-to-one with User)
+  owner       User      @relation("StoreOwner", fields: [ownerId], references: [id])
+  ownerId     Int       @unique
+
+  // products in this store
+  products    Product[]
+  orders      Order[]   @relation("StoreOrders")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float    @default(0)
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  store       Store    @relation(fields: [storeId], references: [id])
+  storeId     Int
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id          Int           @id @default(autoincrement())
+  buyer       User          @relation("UserOrders", fields: [buyerId], references: [id])
+  buyerId     Int
+  store       Store         @relation("StoreOrders", fields: [storeId], references: [id])
+  storeId     Int
+  status      String        @default("pending") // pending, paid, shipped, delivered, cancelled
+  total       Float         @default(0)
+  createdAt   DateTime      @default(now())
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int      @default(1)
+  price     Float    @default(0)
+}
+
+model Feedback {
+  id         Int      @id @default(autoincrement())
+  audience   String   @default("buyer") // buyer | vendor
+  rating     Int      @default(5)
+  comment    String?
+  suggestion String?
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     Int?
+}

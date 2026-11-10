@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شروط وأحكام الخدمة - Talabati Smart Stores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 650px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            font-size: 22px;
+            color: #111827;
+            margin-top: 0;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 16px;
+            color: #2563eb;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        p, li {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+        ul {
+            padding-right: 20px;
+        }
+        .checkbox-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .checkbox-container input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .checkbox-container label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f2937;
+            cursor: pointer;
+        }
+        .btn-proceed {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            background-color: #d1d5db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: not-allowed;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>شروط وأحكام استخدام "Talabati Smart Stores"</h1>
+        
+        <p>مرحباً بك. يُرجى قراءة هذه الشروط والأحكام بعناية قبل إتمام عملية شراء أو ترخيص النظام الرقمي الخاص بنا.</p>
+
+        <h3>1. نطاق الخدمة</h3>
+        <p>تُقدم منصة "Talabati Smart Stores" تراخيص رقمية لاستخدام نظام إدارة المبيعات والمتاجر المصمم خصيصاً لتنظيم أعمال الأسر المنتجة والمشاريع الصغيرة.</p>
+
+        <h3>2. المقترحات والآراء</h3>
+        <p>نرحب دائماً بملاحظات ومقترحات عملائنا لتطوير وتحسين النظام باستمرار لتقديم أفضل تجربة ممكنة.</p>
+
+        <!-- مربع الموافقة (Checkbox) -->
+        <div class="checkbox-container">
+            <input type="checkbox" id="acceptTerms">
+            <label for="acceptTerms">قرأت الشروط والأحكام بعناية وأوافق عليها بالكامل.</label>
+        </div>
+
+        <!-- زر المتابعة -->
+        <button id="proceedBtn" class="btn-proceed" disabled>المتابعة</button>
+    </div>
+
+    <script>
+        const acceptCheckbox = document.getElementById('acceptTerms');
+        const proceedBtn = document.getElementById('proceedBtn');
+
+        acceptCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                proceedBtn.disabled = false;
+                proceedBtn.style.backgroundColor = '#2563eb';
+                proceedBtn.style.cursor = 'pointer';
+            } else {
+                proceedBtn.disabled = true;
+                proceedBtn.style.backgroundColor = '#d1d5db';
+                proceedBtn.style.cursor = 'not-allowed';
+            }
+        });
+
+        proceedBtn.addEventListener('click', function() {
+            if (!proceedBtn.disabled) {
+                // يمكنك هنا توجيه المستخدم لصفحة الدفع أو الخطوة التالية
+                alert('شكراً لك! سيتم تحويلك الآن لخطوة الدفع.');
+                // window.location.href = 'checkout.html';
+            }
+        });
+    </script>
+
+</body>
+</html>

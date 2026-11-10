@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقترحات وآراء العملاء - Talabati Smart Stores</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            color: #0f172a;
+            margin-top: 0;
+            font-size: 22px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        p {
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        textarea {
+            width: 100%;
+            height: 140px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-top: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            border-color: #2563eb;
+        }
+        .success-msg {
+            color: #16a34a;
+            font-size: 15px;
+            margin-top: 15px;
+            display: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>مقترحات وآراء العملاء - Talabati Smart Stores</h2>
+        <p>نحن نحرص دائمًا على تقديم تجربة راقية ومميزة. نرحب بملاحظاتكم ومقترحاتكم البناءة لتطوير خدماتنا بأسلوب فصيح ومهذب.</p>
+        
+        <form id="feedbackForm">
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <div style="flex:1;">
+                    <label for="feedbackAudience" style="font-weight: 600; font-size: 14px;">نوع الحساب:</label>
+                    <select id="feedbackAudience" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;margin-top:6px;">
+                        <option value="buyer">عميل / زبون</option>
+                        <option value="vendor">بائع / أسرة منتجة</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label for="feedbackRating" style="font-weight: 600; font-size: 14px;">التقييم:</label>
+                    <select id="feedbackRating" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;margin-top:6px;">
+                        <option value="5">⭐⭐⭐⭐⭐ ممتاز (5/5)</option>
+                        <option value="4">⭐⭐⭐⭐ جيد جداً (4/5)</option>
+                        <option value="3">⭐⭐⭐ جيد (3/5)</option>
+                        <option value="2">⭐⭐ مقبول (2/5)</option>
+                        <option value="1">⭐ ضعيف (1/5)</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="feedbackText" style="font-weight: 600; font-size: 14px;">اكتب مقترحك أو رأيك هنا:</label>
+            <textarea id="feedbackText" placeholder="اكتب مقترحك بأسلوب فصيح ومهذب..."></textarea>
+            
+            <button type="submit" id="submitBtn">إرسال المقترح</button>
+            <div id="successMsg" class="success-msg">شكراً لك! تم استقبال مقترحك وحفظه بنجاح.</div>
+            <div id="errorMsg" style="color: #dc2626; font-size: 14px; margin-top: 15px; display: none; text-align: center;"></div>
+            <div style="margin-top:20px;text-align:center;">
+                <a href="index.html" style="color:#2563eb;text-decoration:none;font-weight:600;font-size:14px;">← العودة إلى الصفحة الرئيسية</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const bannedWords = ["طز", "سب", "شتم"];
+
+        const form = document.getElementById('feedbackForm');
+        const textarea = document.getElementById('feedbackText');
+        const successMsg = document.getElementById('successMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            let text = textarea.value.trim();
+            const rating = Number(document.getElementById('feedbackRating').value) || 5;
+            const audience = document.getElementById('feedbackAudience').value || 'buyer';
+
+            successMsg.style.display = "none";
+            errorMsg.style.display = "none";
+
+            if (text === "") {
+                return;
+            }
+
+            // فحص وجود أي كلمة محظورة
+            let containsBannedWord = false;
+            for (let word of bannedWords) {
+                if (text.includes(word)) {
+                    containsBannedWord = true;
+                    break;
+                }
+            }
+
+            if (containsBannedWord) {
+                textarea.value = "";
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'جارٍ الإرسال...';
+
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = localStorage.getItem('saas_token');
+                if (token) headers.Authorization = `Bearer ${token}`;
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        rating,
+                        audience,
+                        comment: text,
+                        suggestion: text
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    successMsg.style.display = "block";
+                    textarea.value = "";
+                } else {
+                    errorMsg.textContent = result.error || 'تعذر إرسال المقترح';
+                    errorMsg.style.display = "block";
+                }
+            } catch (err) {
+                errorMsg.textContent = 'تعذر الاتصال بالخادم لإرسال مقترحك';
+                errorMsg.style.display = "block";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'إرسال المقترح';
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الأسرة المنتجة</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        :root { --theme: #54733b; --accent: #dfeedd; --ink: #1f2a24; --muted: #718078; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 22px; background: #fbfaf5; color: var(--ink); font-family: Cairo, Segoe UI, sans-serif; }
+        nav, main { max-width: 1050px; margin-inline: auto; }
+        nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        nav a { color: var(--theme); font-weight: 800; text-decoration: none; }
+        .hero { padding: 38px 32px; border-radius: 22px; background: linear-gradient(135deg, var(--accent), #f4ead1); margin-bottom: 26px; }
+        .brand { display: flex; align-items: center; gap: 16px; }
+        .brand img { width: 76px; height: 76px; border-radius: 18px; object-fit: cover; background: #fff8; }
+        .brand h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 3rem); }
+        .hero p { color: var(--muted); margin: 12px 0 0; }
+        .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 20px; }
+        .card { overflow: hidden; background: #fff; border: 1px solid #e2e9df; border-radius: 17px; box-shadow: 0 10px 24px #30493612; }
+        .visual { height: 145px; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), #f4ead1); color: var(--theme); font-size: 3rem; }
+        .content { padding: 17px; }
+        .content h2 { margin: 0 0 6px; font-size: 1.1rem; }
+        .content p { min-height: 44px; color: var(--muted); margin: 0 0 10px; }
+        .price { color: var(--theme); font-size: 1.15rem; font-weight: 800; margin-bottom: 12px; }
+        button { width: 100%; border: 0; border-radius: 9px; padding: 11px; background: var(--theme); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+        .empty { padding: 28px; text-align: center; color: var(--muted); }
+    </style>
+</head>
+<body>
+<nav><a href="products.html">كل المنتجات</a><a href="cart.html">السلة</a></nav>
+<main id="app"><p class="empty">جارٍ تحميل المتجر...</p></main>
+<script>
+    const id = new URLSearchParams(location.search).get('id');
+    const money = value => `${Number(value).toFixed(3)} د.ب`;
+    async function loadStore() {
+        const response = await fetch(`/api/stores/${id}`);
+        if (!response.ok) { document.getElementById('app').innerHTML = '<p class="empty">المتجر غير متاح حاليًا.</p>'; return; }
+        const store = await response.json();
+        document.documentElement.style.setProperty('--theme', store.themeColor || '#54733b');
+        document.documentElement.style.setProperty('--accent', store.accentColor || '#dfeedd');
+        document.title = store.name;
+        const hero = `<section class="hero"><div class="brand">${store.logoUrl ? `<img src="${store.logoUrl}" alt="شعار ${store.name}">` : ''}<h1>${store.name}</h1></div><p>${store.welcomeText || store.description || 'منتجات منزلية مصنوعة بحب'}</p></section>`;
+        const products = `<section class="products">${store.products.length ? store.products.map(product => `<article class="card"><div class="visual">${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover">` : '✦'}</div><div class="content"><h2>${product.name}</h2><p>${product.description || 'لا يوجد وصف متاح'}</p><div class="price">${money(product.price)}</div><button onclick="addToCart(${product.id}, '${String(product.name).replace(/'/g, "\\'")}', ${product.price})">إضافة إلى السلة</button></div></article>`).join('') : '<p class="empty">لا توجد منتجات منشورة حاليًا.</p>'}</section>`;
+        const sections = { hero, products };
+        const order = (store.layoutOrder || 'hero,products').split(',');
+        document.getElementById('app').innerHTML = order.map(section => sections[section]).filter(Boolean).join('');
+    }
+    function addToCart(id, name, price) { const cart = JSON.parse(localStorage.getItem('cart') || '[]'); const item = cart.find(entry => entry.id === id); if (item) item.quantity += 1; else cart.push({ id, name, price, quantity: 1 }); localStorage.setItem('cart', JSON.stringify(cart)); window.location.href = 'cart.html'; }
+    if (id) loadStore(); else document.getElementById('app').innerHTML = '<p class="empty">رابط المتجر غير صحيح.</p>';
+</script>
+</body>
+</html>

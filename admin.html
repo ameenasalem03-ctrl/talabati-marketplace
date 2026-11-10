@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>لوحة تحكم المدير — طلباتي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        :root {
+            --ink: #1f2a24;
+            --muted: #718078;
+            --green: #54733b;
+            --green-dark: #3f5c2b;
+            --line: rgba(84, 115, 59, 0.14);
+            --surface: #ffffff;
+            --danger: #b34646;
+            --warn: #b07b1e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Cairo', Tahoma, sans-serif;
+            background:
+                radial-gradient(900px 500px at 100% -10%, #eaf3e3 0%, transparent 60%),
+                #f4f6f1;
+            color: var(--ink);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        [v-cloak] { display: none; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(84, 115, 59, 0.1);
+            color: var(--green-dark);
+            font-size: .76rem;
+            font-weight: 700;
+            padding: .32rem .75rem;
+            border-radius: 999px;
+        }
+
+        .admin-hero {
+            background:
+                radial-gradient(520px 280px at 12% 0%, rgba(223, 238, 221, 0.95) 0%, transparent 68%),
+                radial-gradient(420px 240px at 95% 100%, rgba(244, 234, 209, 0.9) 0%, transparent 70%),
+                #ffffff;
+            border: 1px solid rgba(84, 115, 59, 0.12);
+            border-radius: 26px;
+            padding: 34px 36px;
+            box-shadow: 0 20px 50px rgba(31, 42, 36, 0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .admin-hero h1 { font-weight: 800; font-size: clamp(1.6rem, 3.2vw, 2.35rem); margin: 10px 0 8px; }
+        .admin-hero p { color: var(--muted); margin: 0; font-size: .95rem; }
+
+        .btn-brand {
+            background: linear-gradient(135deg, #54733b, #6d8f4e);
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            padding: .6rem 1.2rem;
+            box-shadow: 0 10px 22px rgba(84, 115, 59, 0.24);
+        }
+
+        .btn-brand:hover, .btn-brand:focus { background: linear-gradient(135deg, #47632f, #5f7f43); color: #fff; }
+        .btn-brand:disabled { opacity: .7; box-shadow: none; }
+
+        .btn-ghost {
+            border: 1px solid rgba(84, 115, 59, 0.32);
+            color: var(--green-dark);
+            font-weight: 700;
+            border-radius: 12px;
+            padding: .6rem 1.1rem;
+            background: rgba(255, 255, 255, 0.65);
+        }
+
+        .btn-ghost:hover { background: #eef4e8; color: var(--green-dark); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 26px rgba(31, 42, 36, 0.04);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset-inline-start: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--tone, var(--green));
+        }
+
+        .stat-label { display: block; color: var(--muted); font-size: .78rem; font-weight: 600; margin-bottom: 6px; }
+        .stat-value { display: block; font-size: 1.45rem; font-weight: 800; line-height: 1.2; color: var(--ink); }
+        .stat-sub { display: block; color: var(--muted); font-size: .7rem; font-weight: 600; margin-top: 6px; }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 14px 34px rgba(31, 42, 36, 0.05);
+            margin-bottom: 22px;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .panel-head h2 { font-size: 1.05rem; font-weight: 800; margin: 0; }
+        .panel-head p { color: var(--muted); font-size: .78rem; margin: 4px 0 0; }
+
+        .chart {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 10px;
+            align-items: end;
+            min-height: 190px;
+            padding-top: 10px;
+        }
+
+        .chart-col { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+        .chart-value { font-size: .62rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+        .chart-track {
+            width: 100%;
+            max-width: 46px;
+            height: 132px;
+            background: linear-gradient(180deg, #f4f7f1, #fbfcfa);
+            border-radius: 10px 10px 4px 4px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            width: 100%;
+            border-radius: 8px 8px 3px 3px;
+            background: linear-gradient(180deg, #7a9b5c, #54733b);
+            transition: height .3s ease;
+        }
+
+        .chart-day { font-size: .68rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+        .chart-note { color: var(--muted); font-size: .78rem; margin: 12px 0 0; }
+
+        .admin-table { font-size: .84rem; margin: 0; }
+        .admin-table thead th {
+            color: var(--muted);
+            font-size: .72rem;
+            font-weight: 700;
+            background: #f7faf4;
+            border-bottom: 1px solid var(--line);
+            white-space: nowrap;
+            padding: 10px 12px;
+        }
+        .admin-table tbody td { padding: 12px; border-color: #f0f4ed; vertical-align: middle; }
+        .admin-table tbody tr:hover { background: #fbfdf9; }
+
+        .mini { font-size: .72rem; color: var(--muted); font-weight: 600; }
+
+        .store-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 800;
+            flex: 0 0 auto;
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            border-radius: 999px;
+            padding: .2rem .6rem;
+            font-size: .72rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background: #eef4e8;
+            color: var(--green-dark);
+        }
+
+        .pill--ok { background: #e8f4e5; color: #2f6b34; }
+        .pill--danger { background: #fbe9e9; color: var(--danger); }
+        .pill--warn { background: #fdf4e2; color: var(--warn); }
+        .pill--muted { background: #eff1ef; color: #566159; }
+        .pill--gold { background: #fbf1d8; color: #8a651a; }
+        .pill--silver { background: #eef0f3; color: #5a6570; }
+        .pill--bronze { background: #f8ece2; color: #8b5a34; }
+
+        .plan-select {
+            width: 112px;
+            min-width: 112px;
+            font-size: .78rem;
+            font-weight: 600;
+            border-radius: 9px;
+            border-color: #dde6d6;
+            background-color: #fbfcf9;
+            padding-block: .3rem;
+        }
+
+        .plan-select:focus { border-color: var(--green); box-shadow: 0 0 0 .15rem rgba(84, 115, 59, .15); }
+
+        .table-actions { display: flex; gap: 6px; flex-wrap: nowrap; }
+        .table-actions .btn { font-size: .74rem; font-weight: 700; border-radius: 9px; padding: .3rem .6rem; white-space: nowrap; }
+
+        .loading-panel, .denied-panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 60px 24px;
+            text-align: center;
+            box-shadow: 0 14px 34px rgba(31, 42, 36, 0.05);
+        }
+
+        .denied-panel h2 { font-weight: 800; font-size: 1.4rem; margin-bottom: 8px; }
+        .denied-panel p { color: var(--muted); margin-bottom: 20px; }
+
+        .feedback-list { display: grid; gap: 10px; }
+        .feedback-item {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fbfcf9;
+        }
+        .feedback-item.unread { border-inline-start: 4px solid var(--warn); background: #fffdf5; }
+        .feedback-head, .feedback-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .feedback-stars { color: #d99a1f; letter-spacing: 2px; font-size: .95rem; font-weight: 700; margin-inline-end: 6px; }
+        .feedback-text { margin: 10px 0 0; font-size: .88rem; line-height: 1.7; }
+        .feedback-suggestion { margin: 6px 0 0; font-size: .82rem; color: var(--muted); }
+        .feedback-foot { margin-top: 10px; }
+
+        .toast-box {
+            position: fixed;
+            inset-inline-start: 24px;
+            bottom: 24px;
+            z-index: 1080;
+            background: #26332c;
+            color: #fff;
+            border-radius: 12px;
+            padding: .75rem 1rem;
+            font-size: .85rem;
+            font-weight: 600;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .2);
+            max-width: min(360px, calc(100vw - 48px));
+        }
+
+        .toast-box.is-error { background: #8f3434; }
+
+        .site-footer {
+            padding: 10px 4px 4px;
+            color: var(--muted);
+            font-size: .76rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 991.98px) {
+            .admin-hero { padding: 26px 22px; }
+            .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 575.98px) {
+            body { padding: 12px; }
+            .admin-hero { border-radius: 20px; padding: 22px 18px; }
+            .stat-grid { grid-template-columns: 1fr; }
+            .panel { padding: 16px 14px; border-radius: 16px; }
+            .chart { gap: 3px; }
+            .chart-day { font-size: .56rem; }
+            .chart-value { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        (function () {
+            if (!localStorage.getItem('saas_token')) {
+                window.location.replace('products.html?login=1');
+            }
+        })();
+    </script>
+
+    <div id="site-navbar"></div>
+
+    <div id="app" class="container-fluid px-lg-4" style="max-width:1280px;" v-cloak>
+
+        <div v-if="authState === 'checking' || (loading && !hasLoaded)" class="loading-panel">
+            <div class="spinner-border text-success mb-3" role="status"></div>
+            <div class="text-muted">جارٍ التحقق من الصلاحيات وتحميل بيانات المنصة...</div>
+        </div>
+
+        <div v-else-if="authState === 'denied'" class="denied-panel">
+            <h2>هذه اللوحة مخصصة لمدير المنصة</h2>
+            <p>سجّل الدخول بحساب يملك صلاحية «مدير» لعرض إحصائيات المنصة وإدارة المتاجر والاشتراكات.</p>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <a href="products.html?login=1" class="btn btn-brand">تسجيل الدخول</a>
+                <a href="index.html" class="btn btn-ghost">العودة للرئيسية</a>
+            </div>
+        </div>
+
+        <template v-else>
+            <header class="admin-hero">
+                <div>
+                    <span class="eyebrow">إدارة المنصة</span>
+                    <h1>لوحة تحكم المدير</h1>
+                    <p>نظرة شاملة على المتاجر، الاشتراكات، المستخدمين، والطلبات في مكان واحد.</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="products.html" class="btn btn-ghost">واجهة المتجر</a>
+                    <button type="button" class="btn btn-brand" :disabled="loading" @click="loadData()">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        تحديث البيانات
+                    </button>
+                </div>
+            </header>
+
+            <div v-if="errorMessage" class="alert alert-danger d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>{{ errorMessage }}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" @click="loadData()">إعادة المحاولة</button>
+            </div>
+
+            <section class="stat-grid">
+                <article class="stat-card" style="--tone:#54733b">
+                    <span class="stat-label">إجمالي المبيعات</span>
+                    <strong class="stat-value">{{ formatMoney(overview.revenue) }}</strong>
+                    <span class="stat-sub">من {{ overview.orders }} طلب غير ملغى</span>
+                </article>
+                <article class="stat-card" style="--tone:#3f5c2b">
+                    <span class="stat-label">المتاجر النشطة</span>
+                    <strong class="stat-value">{{ overview.activeStores }}</strong>
+                    <span class="stat-sub">من أصل {{ overview.stores }} متجر</span>
+                </article>
+                <article class="stat-card" style="--tone:#b07b1e">
+                    <span class="stat-label">المشتركون المدفوعون</span>
+                    <strong class="stat-value">{{ overview.paidStores }}</strong>
+                    <span class="stat-sub">باقات برونزية وفضية وذهبية</span>
+                </article>
+                <article class="stat-card" style="--tone:#6d8f4e">
+                    <span class="stat-label">الطلبات</span>
+                    <strong class="stat-value">{{ overview.orders }}</strong>
+                    <span class="stat-sub">{{ overview.pendingOrders }} طلب قيد الانتظار</span>
+                </article>
+                <article class="stat-card" style="--tone:#7a9b5c">
+                    <span class="stat-label">المستخدمون</span>
+                    <strong class="stat-value">{{ overview.users }}</strong>
+                    <span class="stat-sub">حسابات مسجّلة على المنصة</span>
+                </article>
+                <article class="stat-card" style="--tone:#8aa86f">
+                    <span class="stat-label">المنتجات</span>
+                    <strong class="stat-value">{{ overview.products }}</strong>
+                    <span class="stat-sub">منتج منشور في المتاجر النشطة</span>
+                </article>
+                <article class="stat-card" style="--tone:#b34646">
+                    <span class="stat-label">متاجر موقوفة</span>
+                    <strong class="stat-value">{{ overview.suspendedStores }}</strong>
+                    <span class="stat-sub">مخفية عن واجهة المتجر</span>
+                </article>
+                <article class="stat-card" style="--tone:#9a7b4f">
+                    <span class="stat-label">متوسط قيمة الطلب</span>
+                    <strong class="stat-value">{{ formatMoney(averageOrder) }}</strong>
+                    <span class="stat-sub">إجمالي المبيعات ÷ عدد الطلبات</span>
+                </article>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>مبيعات آخر 7 أيام</h2>
+                        <p>مجموع الطلبات اليومية غير الملغاة</p>
+                    </div>
+                    <span class="pill">الإجمالي: {{ formatMoney(weekRevenue) }}</span>
+                </div>
+                <div class="chart">
+                    <div class="chart-col" v-for="day in chartBars" :key="day.date">
+                        <span class="chart-value">{{ day.value > 0 ? formatMoney(day.value) : '—' }}</span>
+                        <div class="chart-track">
+                            <div class="chart-bar" :style="{ height: day.height + '%' }" :title="day.label + ' — ' + formatMoney(day.value)"></div>
+                        </div>
+                        <span class="chart-day">{{ day.label }}</span>
+                    </div>
+                </div>
+                <p v-if="weekRevenue === 0" class="chart-note">لا توجد مبيعات مسجّلة خلال الأسبوع الحالي حتى الآن.</p>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>المتاجر والاشتراكات</h2>
+                        <p>{{ stores.length }} متجر — يمكنك الإيقاف، التفعيل، تغيير الباقة، وتمديد الاشتراك.</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="loading" @click="loadData()">تحديث</button>
+                </div>
+
+                <div v-if="stores.length === 0" class="text-muted text-center py-4">لا توجد متاجر مسجّلة بعد.</div>
+                <div v-else class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>المتجر</th>
+                                <th>المالك</th>
+                                <th>المنتجات</th>
+                                <th>الطلبات</th>
+                                <th>المبيعات</th>
+                                <th>الباقة</th>
+                                <th>الحالة</th>
+                                <th>انتهاء الاشتراك</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="store in stores" :key="store.id">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="store-avatar" :style="{ background: store.themeColor || '#54733b' }">{{ (store.name || 'م').slice(0, 1) }}</span>
+                                        <div>
+                                            <strong>{{ store.name }}</strong>
+                                            <div class="mini">{{ store.slug }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ (store.owner && (store.owner.name || store.owner.email)) || '—' }}</div>
+                                    <div v-if="store.owner && store.owner.name" class="mini">{{ store.owner.email }}</div>
+                                </td>
+                                <td>{{ store.products }}</td>
+                                <td>{{ store.orders }}</td>
+                                <td class="text-nowrap">{{ formatMoney(store.revenue) }}</td>
+                                <td>
+                                    <select class="form-select form-select-sm plan-select" :value="store.subscriptionPlan" :disabled="busyId === store.id" @change="changePlan(store, $event)">
+                                        <option value="free">مجاني</option>
+                                        <option value="bronze">برونزي</option>
+                                        <option value="silver">فضي</option>
+                                        <option value="gold">ذهبي</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <span class="pill" :class="store.status === 'active' ? 'pill--ok' : 'pill--danger'">
+                                        {{ store.status === 'active' ? 'نشط' : 'موقوف' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>{{ store.subscriptionEndsAt ? formatDate(store.subscriptionEndsAt) : '—' }}</div>
+                                    <div class="mini">{{ daysLeft(store) }}</div>
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button type="button" class="btn" :class="store.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success'" :disabled="busyId === store.id" @click="toggleStatus(store)">
+                                            {{ store.status === 'active' ? 'إيقاف' : 'تفعيل' }}
+                                        </button>
+                                        <button v-if="store.subscriptionPlan !== 'free'" type="button" class="btn btn-outline-success" :disabled="busyId === store.id" @click="extend(store)">+30 يوم</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>حسابات المستخدمين</h2>
+                        <p>{{ users.length }} حساب — مديرون، بائعون، ومشترون.</p>
+                    </div>
+                </div>
+
+                <div v-if="users.length === 0" class="text-muted text-center py-4">لا توجد حسابات بعد.</div>
+                <div v-else class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الدور</th>
+                                <th>المتجر</th>
+                                <th>الطلبات</th>
+                                <th>تاريخ الانضمام</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in users" :key="user.id">
+                                <td>{{ user.name || '—' }}</td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="pill pill--muted">{{ roleLabel(user.role) }}</span></td>
+                                <td>{{ (user.store && user.store.name) || '—' }}</td>
+                                <td>{{ user.orders }}</td>
+                                <td>{{ formatDate(user.createdAt) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>آخر الطلبات</h2>
+                        <p>أحدث 50 طلباً على مستوى المنصة.</p>
+                    </div>
+                </div>
+
+                <div v-if="orders.length === 0" class="text-muted text-center py-4">لا توجد طلبات بعد.</div>
+                <div v-else class="table-responsive">
+                    <table class="table admin-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>الطلب</th>
+                                <th>المتجر</th>
+                                <th>المشتري</th>
+                                <th>القطع</th>
+                                <th>الإجمالي</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="order in orders" :key="order.id">
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.storeName || '—' }}</td>
+                                <td>{{ (order.buyer && (order.buyer.name || order.buyer.email)) || '—' }}</td>
+                                <td>{{ order.itemsCount }}</td>
+                                <td class="text-nowrap">{{ formatMoney(order.total) }}</td>
+                                <td><span class="pill" :class="orderPill(order.status)">{{ orderStatusLabel(order.status) }}</span></td>
+                                <td>{{ formatDateTime(order.createdAt) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>
+                            آراء المشتركين
+                            <span v-if="feedbackUnread" class="pill pill--warn">{{ feedbackUnread }} جديد</span>
+                        </h2>
+                        <p>إجمالي الآراء: {{ feedback.length }} — تصل عبر صفحة «مقترحات وآراء العملاء».</p>
+                    </div>
+                    <a href="feedback.html" target="_blank" class="btn btn-sm btn-outline-secondary">فتح صفحة الآراء</a>
+                </div>
+
+                <div v-if="feedback.length === 0" class="text-muted text-center py-4">لا توجد آراء بعد.</div>
+                <div v-else class="feedback-list">
+                    <article v-for="item in feedback" :key="item.id" class="feedback-item" :class="{ unread: !item.readAt }">
+                        <div class="feedback-head">
+                            <div>
+                                <span class="feedback-stars">{{ feedbackStars(item.rating) }}</span>
+                                <span class="pill pill--muted">{{ audienceLabel(item.audience) }}</span>
+                                <span v-if="!item.readAt" class="pill pill--warn">جديد</span>
+                            </div>
+                            <span class="mini">{{ formatDateTime(item.createdAt) }}</span>
+                        </div>
+                        <p class="feedback-text">{{ item.comment }}</p>
+                        <p v-if="item.suggestion" class="feedback-suggestion"><strong>اقتراح:</strong> {{ item.suggestion }}</p>
+                        <div class="feedback-foot">
+                            <span class="mini">{{ (item.user && (item.user.name || item.user.email)) || 'زائر' }}</span>
+                            <button v-if="!item.readAt" type="button" class="btn btn-sm btn-outline-success" @click="markFeedbackRead(item)">تعليم كمقروء</button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <footer class="site-footer">
+                <span>لوحة الإدارة — تُحدَّث البيانات من قاعدة البيانات مباشرة.</span>
+                <span>آخر تحديث: {{ lastUpdated || '—' }}</span>
+            </footer>
+        </template>
+
+        <div v-if="toast.message" class="toast-box" :class="{ 'is-error': toast.type === 'error' }">{{ toast.message }}</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="navbar.js"></script>
+    <script>
+        const API_BASE = window.API_BASE || `${location.protocol}//${location.hostname}${location.port ? ':' + location.port : ''}`;
+        const TOKEN_KEY = 'saas_token';
+        const USER_KEY = 'saas_user';
+
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    authState: 'checking',
+                    user: null,
+                    overview: {
+                        users: 0,
+                        stores: 0,
+                        activeStores: 0,
+                        suspendedStores: 0,
+                        paidStores: 0,
+                        products: 0,
+                        orders: 0,
+                        pendingOrders: 0,
+                        revenue: 0,
+                        revenue7d: []
+                    },
+                    stores: [],
+                    users: [],
+                    orders: [],
+                    feedback: [],
+                    feedbackUnread: 0,
+                    loading: false,
+                    hasLoaded: false,
+                    errorMessage: '',
+                    busyId: null,
+                    lastUpdated: '',
+                    toast: { message: '', type: 'success' },
+                    toastTimer: null
+                };
+            },
+            computed: {
+                averageOrder() {
+                    return this.overview.orders > 0 ? this.overview.revenue / this.overview.orders : 0;
+                },
+                weekRevenue() {
+                    return (this.overview.revenue7d || []).reduce((sum, day) => sum + (Number(day.total) || 0), 0);
+                },
+                chartBars() {
+                    const days = this.overview.revenue7d || [];
+                    const max = Math.max.apply(null, days.map(day => Number(day.total) || 0).concat([1]));
+                    return days.map(day => {
+                        const value = Number(day.total) || 0;
+                        return {
+                            date: day.date,
+                            value,
+                            height: value > 0 ? Math.max(8, Math.round((value / max) * 100)) : 2,
+                            label: this.weekdayLabel(day.date)
+                        };
+                    });
+                }
+            },
+            mounted() {
+                this.checkAuth();
+            },
+            methods: {
+                formatMoney(value) {
+                    return (Number(value) || 0).toFixed(3) + ' د.ب';
+                },
+                formatDate(value) {
+                    if (!value) return '—';
+                    const date = new Date(value);
+                    if (isNaN(date.getTime())) return '—';
+                    return date.toLocaleDateString('ar-EG-u-nu-latn', { year: 'numeric', month: 'short', day: 'numeric' });
+                },
+                formatDateTime(value) {
+                    if (!value) return '—';
+                    const date = new Date(value);
+                    if (isNaN(date.getTime())) return '—';
+                    return date.toLocaleString('ar-EG-u-nu-latn', {
+                        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                },
+                weekdayLabel(value) {
+                    const date = new Date(value + 'T00:00:00');
+                    if (isNaN(date.getTime())) return '';
+                    const day = date.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'narrow' });
+                    return `${day} ${date.getDate()}`;
+                },
+                roleLabel(role) {
+                    const labels = { admin: 'مدير', store_owner: 'بائع', buyer: 'مشترٍ' };
+                    return String(role || '')
+                        .split(',')
+                        .map(part => part.trim())
+                        .filter(Boolean)
+                        .map(part => labels[part] || part)
+                        .join('، ') || '—';
+                },
+                orderStatusLabel(status) {
+                    const labels = {
+                        pending: 'قيد الانتظار',
+                        preparing: 'قيد التجهيز',
+                        paid: 'مدفوع',
+                        shipped: 'تم الشحن',
+                        delivered: 'تم التوصيل',
+                        cancelled: 'ملغى'
+                    };
+                    return labels[status] || status || '—';
+                },
+                orderPill(status) {
+                    if (status === 'cancelled') return 'pill--danger';
+                    if (status === 'delivered' || status === 'paid') return 'pill--ok';
+                    if (status === 'shipped' || status === 'preparing') return 'pill--warn';
+                    return 'pill--muted';
+                },
+                feedbackStars(rating) {
+                    const score = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
+                    return '★'.repeat(score) + '☆'.repeat(5 - score);
+                },
+                audienceLabel(audience) {
+                    return audience === 'vendor' ? 'بائع / أسرة منتجة' : 'زبون / مشترٍ';
+                },
+                async markFeedbackRead(item) {
+                    if (!item || item.readAt) return;
+                    try {
+                        const updated = await this.api(`/api/admin/feedback/${item.id}/read`, { method: 'PATCH' });
+                        item.readAt = updated.readAt;
+                        this.feedbackUnread = this.feedback.filter(entry => !entry.readAt).length;
+                        this.notify('تم تعليم الرأي كمقروء');
+                    } catch (err) {
+                        console.error('markFeedbackRead error', err);
+                        this.notify((err && (err.error || err.message)) || 'تعذّر تحديث حالة الرأي', true);
+                    }
+                },
+                daysLeft(store) {
+                    if (!store.subscriptionEndsAt) return store.subscriptionPlan === 'free' ? 'باقة مجانية' : 'بدون تاريخ انتهاء';
+                    const end = new Date(store.subscriptionEndsAt);
+                    if (isNaN(end.getTime())) return '';
+                    const days = Math.ceil((end.getTime() - Date.now()) / 86400000);
+                    if (days < 0) return 'منتهي منذ ' + Math.abs(days) + ' يوم';
+                    if (days === 0) return 'ينتهي اليوم';
+                    return 'متبقٍ ' + days + ' يوم';
+                },
+                notify(message, isError) {
+                    this.toast = { message, type: isError ? 'error' : 'success' };
+                    if (this.toastTimer) clearTimeout(this.toastTimer);
+                    this.toastTimer = setTimeout(() => { this.toast.message = ''; }, 3200);
+                },
+                async api(path, options = {}) {
+                    const url = path.startsWith('http') ? path : `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+                    const headers = Object.assign({}, options.headers || {});
+                    headers.Accept = headers.Accept || 'application/json';
+                    const token = localStorage.getItem(TOKEN_KEY);
+                    if (token) headers.Authorization = `Bearer ${token}`;
+
+                    let body = options.body;
+                    if (body && typeof body === 'object' && !(body instanceof FormData)) {
+                        headers['Content-Type'] = 'application/json';
+                        body = JSON.stringify(body);
+                    }
+
+                    const res = await fetch(url, Object.assign({}, options, { headers, body }));
+                    if (!res.ok) {
+                        const text = await res.text();
+                        let parsed;
+                        try { parsed = JSON.parse(text); } catch (e) { parsed = { error: text }; }
+                        const error = new Error((parsed && (parsed.error || parsed.message)) || ('HTTP ' + res.status));
+                        error.status = res.status;
+                        error.error = parsed && parsed.error;
+                        throw error;
+                    }
+                    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+                    if (contentType.includes('application/json')) return res.json();
+                    const text = await res.text();
+                    try { return JSON.parse(text); } catch (e) { return text; }
+                },
+                async checkAuth() {
+                    try {
+                        const resp = await this.api('/api/auth/me');
+                        const user = resp.user || resp;
+                        const roles = String((user && user.role) || '').split(',').map(role => role.trim());
+                        if (!roles.includes('admin')) {
+                            this.authState = 'denied';
+                            return;
+                        }
+                        this.user = user;
+                        localStorage.setItem(USER_KEY, JSON.stringify(user));
+                        if (window.renderSiteNavbar) window.renderSiteNavbar();
+                        this.authState = 'authorized';
+                        await this.loadData();
+                    } catch (err) {
+                        console.error('admin checkAuth error', err);
+                        if (err && err.status === 401) {
+                            localStorage.removeItem(TOKEN_KEY);
+                            localStorage.removeItem(USER_KEY);
+                            window.location.replace('products.html?login=1');
+                            return;
+                        }
+                        this.authState = 'denied';
+                    }
+                },
+                async loadData(silent) {
+                    this.loading = true;
+                    if (!silent) this.errorMessage = '';
+                    try {
+                        const [overview, stores, users, orders, feedback] = await Promise.all([
+                            this.api('/api/admin/overview'),
+                            this.api('/api/admin/stores'),
+                            this.api('/api/admin/users'),
+                            this.api('/api/admin/orders'),
+                            this.api('/api/admin/feedback')
+                        ]);
+                        this.overview = overview;
+                        this.stores = stores;
+                        this.users = users;
+                        this.orders = orders;
+                        this.feedback = Array.isArray(feedback.items) ? feedback.items : [];
+                        this.feedbackUnread = Number(feedback.unread) || 0;
+                        this.lastUpdated = this.formatDateTime(new Date().toISOString());
+                        this.hasLoaded = true;
+                        this.errorMessage = '';
+                    } catch (err) {
+                        console.error('admin loadData error', err);
+                        if (err && err.status === 401) {
+                            localStorage.removeItem(TOKEN_KEY);
+                            localStorage.removeItem(USER_KEY);
+                            window.location.replace('products.html?login=1');
+                            return;
+                        }
+                        if (!silent) this.errorMessage = (err && (err.error || err.message)) || 'تعذّر تحميل بيانات لوحة المدير.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async patchStore(store, payload, successMessage) {
+                    if (this.busyId) return false;
+                    this.busyId = store.id;
+                    try {
+                        const updated = await this.api(`/api/admin/stores/${store.id}`, { method: 'PATCH', body: payload });
+                        Object.assign(store, updated);
+                        this.notify(successMessage || 'تم تحديث المتجر بنجاح');
+                        await this.loadData(true);
+                        return true;
+                    } catch (err) {
+                        console.error('patchStore error', err);
+                        this.notify((err && (err.error || err.message)) || 'تعذّر تحديث المتجر', true);
+                        return false;
+                    } finally {
+                        this.busyId = null;
+                    }
+                },
+                toggleStatus(store) {
+                    const nextStatus = store.status === 'active' ? 'suspended' : 'active';
+                    this.patchStore(store, { status: nextStatus }, nextStatus === 'active' ? 'تم تفعيل المتجر' : 'تم إيقاف المتجر');
+                },
+                async changePlan(store, event) {
+                    const nextPlan = event.target.value;
+                    const previousPlan = store.subscriptionPlan;
+                    if (nextPlan === previousPlan) return;
+                    store.subscriptionPlan = nextPlan;
+                    const ok = await this.patchStore(store, { subscriptionPlan: nextPlan }, 'تم تحديث باقة الاشتراك');
+                    if (!ok) {
+                        store.subscriptionPlan = previousPlan;
+                        event.target.value = previousPlan;
+                    }
+                },
+                extend(store) {
+                    this.patchStore(store, { extendDays: 30 }, 'تم تمديد الاشتراك 30 يوماً');
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

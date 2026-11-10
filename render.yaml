@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: talabati
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: master
+    autoDeploy: true
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.18.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: talabati-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: مدير المنصة
+      - key: ADMIN_STORE_NAME
+        value: متجر الإدارة
+
+databases:
+  - name: talabati-db
+    plan: free
+    region: frankfurt
+    databaseName: talabati
+    user: talabati

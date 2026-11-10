@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدخول إلى المنصة</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        :root { --green: #54733b; --ink: #1f2a24; --muted: #718078; --line: #e1e9de; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top right, #e4efdc 0, transparent 35%), #f6f7f0; color: var(--ink); font-family: Cairo, Segoe UI, sans-serif; }
+        main { width: min(100%, 440px); background: #fff; padding: 34px; border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 22px 50px #30493618; }
+        h1 { margin: 0 0 8px; color: var(--green); font-size: 1.9rem; }
+        p { color: var(--muted); }
+        .tabs { display: flex; gap: 8px; margin: 20px 0; }
+        .tabs button { flex: 1; border: 1px solid var(--line); background: #fff; padding: 11px; border-radius: 10px; cursor: pointer; font: inherit; }
+        .tabs button.active { background: var(--green); color: #fff; border-color: var(--green); }
+        label { display: block; margin: 14px 0 6px; font-weight: 600; }
+        input, select { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 13px; font: inherit; background: #fcfdfb; }
+        input:focus, select:focus { outline: 3px solid #dcebd5; border-color: var(--green); }
+        .submit { width: 100%; margin-top: 20px; border: 0; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, #54733b, #769653); color: #fff; font: inherit; font-weight: bold; cursor: pointer; }
+        #message { min-height: 24px; margin-top: 14px; text-align: center; }
+        a { display: block; margin-top: 18px; color: var(--green); text-align: center; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>talabati smart stores</h1>
+    <p id="intro">سجّل الدخول لإدارة متجرك وطلباتك.</p>
+    <div class="tabs"><button id="login-tab" class="active" type="button">تسجيل الدخول</button><button id="register-tab" type="button">حساب جديد</button></div>
+    <form id="auth-form">
+        <div id="name-field" hidden><label for="name">الاسم</label><input id="name"></div>
+        <label for="email">البريد الإلكتروني</label><input id="email" type="email" required>
+        <label for="password">كلمة المرور</label><input id="password" type="password" minlength="8" required>
+        <div id="role-field" hidden><label for="role">نوع الحساب</label><select id="role"><option value="buyer">عميل</option><option value="vendor">بائع / أسرة منتجة</option></select></div>
+        <button class="submit" type="submit">تسجيل الدخول</button>
+    </form>
+    <div id="message" role="status"></div>
+    <a href="setup-admin.html">إنشاء حساب المدير الأول</a>
+    <a href="products.html">العودة إلى المنتجات</a>
+</main>
+<script>
+    let mode = 'login';
+    const form = document.getElementById('auth-form');
+    const message = document.getElementById('message');
+    const setMode = nextMode => {
+        mode = nextMode;
+        const register = mode === 'register';
+        document.getElementById('name-field').hidden = !register;
+        document.getElementById('role-field').hidden = !register;
+        document.getElementById('name').required = register;
+        document.getElementById('login-tab').classList.toggle('active', !register);
+        document.getElementById('register-tab').classList.toggle('active', register);
+        document.querySelector('.submit').textContent = register ? 'إنشاء الحساب' : 'تسجيل الدخول';
+        document.getElementById('intro').textContent = register ? 'أنشئ حساب عميل أو بائع للبدء.' : 'سجّل الدخول لإدارة متجرك وطلباتك.';
+        message.textContent = '';
+    };
+    document.getElementById('login-tab').onclick = () => setMode('login');
+    document.getElementById('register-tab').onclick = () => setMode('register');
+    form.onsubmit = async event => {
+        event.preventDefault();
+        const payload = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+        if (mode === 'register') Object.assign(payload, {
+            name: document.getElementById('name').value,
+            role: document.getElementById('role').value
+        });
+        try {
+            const response = await fetch(`/api/auth/${mode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error);
+            if (mode === 'register') { message.textContent = 'تم إنشاء الحساب. سجّل الدخول الآن.'; setMode('login'); }
+            else window.location.href = new URLSearchParams(location.search).get('next') || (['admin', 'vendor'].includes(result.role) ? 'admin.html' : 'products.html');
+        } catch (error) { message.textContent = error.message || 'تعذر تنفيذ العملية'; message.style.color = '#c0392b'; }
+    };
+</script>
+</body>
+</html>

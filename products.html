@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>المنتجات — طلباتي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', Tahoma, sans-serif;
+            background: #f6f7f0;
+            color: #1f2a24;
+            padding: 20px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+            gap: 20px;
+        }
+
+        .card-visual {
+            height: 160px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+            .card-visual img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+        .muted {
+            color: #718078;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .auth-panel {
+            max-width: 520px;
+            margin: 10px auto;
+            border-radius: 10px;
+            padding: 14px;
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(31,42,36,0.06);
+        }
+    </style>
+</head>
+<body>
+    <div id="site-navbar"></div>
+
+    <div id="app" class="container">
+
+        <div v-if="user" class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="muted small">
+                مرحباً، {{ user.name || user.email }}
+                <span v-if="user.store"> — {{ user.store.name }}</span>
+            </div>
+            <button v-if="user.store" class="btn btn-outline-secondary btn-sm" @click="openStoreSettings">إعدادات المتجر</button>
+        </div>
+
+        <!-- نماذج التسجيل والدخول -->
+        <div v-if="showRegister" class="auth-panel">
+            <h5>تسجيل بائع جديد</h5>
+            <form @submit.prevent="onRegister">
+                <div class="mb-2">
+                    <label class="form-label small">البريد الإلكتروني</label>
+                    <input class="form-control form-control-sm" v-model="register.email" type="email" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">كلمة المرور</label>
+                    <input class="form-control form-control-sm" v-model="register.password" type="password" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">الاسم (اختياري)</label>
+                    <input class="form-control form-control-sm" v-model="register.name" type="text">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">اسم المتجر</label>
+                    <input class="form-control form-control-sm" v-model="register.storeName" type="text" required>
+                </div>
+                <div class="mb-2 row gx-2">
+                    <div class="col">
+                        <label class="form-label small">لون السمة</label>
+                        <input class="form-control form-control-sm" v-model="register.themeColor" type="text" placeholder="#54733b">
+                    </div>
+                    <div class="col">
+                        <label class="form-label small">لون التمييز</label>
+                        <input class="form-control form-control-sm" v-model="register.accentColor" type="text" placeholder="#dfeedd">
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">رابط الشعار (logoUrl)</label>
+                    <input class="form-control form-control-sm" v-model="register.logoUrl" type="url">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">الوصف (اختياري)</label>
+                    <textarea class="form-control form-control-sm" v-model="register.description" rows="2"></textarea>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success btn-sm">إنشاء متجر وتسجيل</button>
+                </div>
+            </form>
+        </div>
+
+        <div v-if="showLogin" class="auth-panel">
+            <h5>تسجيل الدخول</h5>
+            <form @submit.prevent="onLogin">
+                <div class="mb-2">
+                    <label class="form-label small">البريد الإلكتروني</label>
+                    <input class="form-control form-control-sm" v-model="login.email" type="email" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">كلمة المرور</label>
+                    <input class="form-control form-control-sm" v-model="login.password" type="password" required>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-sm">دخول</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- إعدادات المتجر -->
+        <div v-if="showSettings && user" class="auth-panel">
+            <h5>إعدادات المتجر</h5>
+            <form @submit.prevent="updateStoreSettings">
+                <div class="mb-2">
+                    <label class="form-label small">اسم المتجر</label>
+                    <input class="form-control form-control-sm" v-model="settings.name" type="text">
+                </div>
+                <div class="mb-2 row gx-2">
+                    <div class="col">
+                        <label class="form-label small">لون السمة</label>
+                        <input class="form-control form-control-sm" v-model="settings.themeColor" type="text">
+                    </div>
+                    <div class="col">
+                        <label class="form-label small">لون التمييز</label>
+                        <input class="form-control form-control-sm" v-model="settings.accentColor" type="text">
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">شعار (URL)</label>
+                    <input class="form-control form-control-sm" v-model="settings.logoUrl" type="url">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small">الوصف</label>
+                    <textarea class="form-control form-control-sm" v-model="settings.description" rows="2"></textarea>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-success btn-sm" type="submit">حفظ</button>
+                    <button class="btn btn-secondary btn-sm ms-2" type="button" @click="showSettings=false">إغلاق</button>
+                </div>
+            </form>
+        </div>
+
+        <h2 class="mb-3">المنتجات</h2>
+        <div class="products-grid mb-5">
+            <div v-if="loading" class="center muted col-12">جارٍ تحميل المنتجات...</div>
+            <div v-else-if="errorMessage" class="center text-danger col-12">{{ errorMessage }}</div>
+            <div v-else-if="products.length === 0" class="center muted col-12">لا توجد منتجات منشورة حالياً.</div>
+            <article v-else v-for="p in products" :key="p.id" class="card" style="border-radius: 12px; overflow: hidden;">
+                <div class="card-visual" :style="{ background: 'linear-gradient(135deg, ' + (p.store?.accentColor || '#dfeedd') + ', #f4ead1)' }">
+                    <img v-if="p.imageUrl" :src="p.imageUrl" :alt="p.name">
+                    <div v-else :style="{ fontSize: '2.6rem', color: (p.store?.themeColor || '#54733b') }">✦</div>
+                </div>
+                <div class="p-3">
+                    <div class="muted small" :style="{ color: (p.store?.themeColor || '#54733b'), fontWeight: '700' }">
+                        {{ p.storeName || p.store?.name || 'متجر محلي' }}
+                    </div>
+                    <h5 style="margin:6px 0 8px">{{ p.name || 'بدون اسم' }}</h5>
+                    <p class="muted" style="min-height:44px; margin:0 0 12px">{{ p.description || 'لا يوجد وصف متاح' }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong :style="{ color: (p.store?.themeColor || '#54733b') }">{{ Number(p.price || 0).toFixed(3) }} د.ب</strong>
+                        <button class="btn btn-sm btn-success" @click="addToCart(p)">
+                            {{ p.addedFeedback ? 'أضيفت ✓' : 'إضافة إلى السلة' }}
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="navbar.js"></script>
+    <script>
+        const API_BASE = window.API_BASE || `${location.protocol}//${location.hostname}${location.port ? ':' + location.port : ''}`;
+        const TOKEN_KEY = 'saas_token';
+        const USER_KEY = 'saas_user';
+
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    products: [],
+                    loading: true,
+                    errorMessage: '',
+                    cartCount: 0,
+                    showLogin: false,
+                    showRegister: false,
+                    showSettings: false,
+                    login: { email: '', password: '' },
+                    register: { email: '', password: '', name: '', storeName: '', themeColor: '', accentColor: '', logoUrl: '', description: '' },
+                    settings: { name: '', themeColor: '', accentColor: '', logoUrl: '', description: '' },
+                    user: null
+                };
+            },
+            mounted() {
+                // فتح نماذج الدخول/التسجيل من شريط التنقل أو الروابط المباشرة
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    const wantsLogin = params.get('login') === '1';
+                    const wantsRegister = params.get('register') === '1';
+                    if (wantsLogin) this.showLogin = true;
+                    if (wantsRegister) this.showRegister = true;
+                    if (wantsLogin || wantsRegister) {
+                        params.delete('login');
+                        params.delete('register');
+                        const url = new URL(window.location.href);
+                        url.search = params.toString();
+                        window.history.replaceState({}, document.title, url.toString());
+                    }
+                } catch (e) {
+                    // تجاهل أخطاء URL
+                }
+
+                // تحميل المنتجات وتحديث السلة واستعادة حالة المستخدم
+                this.loadProducts();
+                this.updateCartCount();
+                this.restoreAuth();
+            },
+            methods: {
+                async apiFetch(path, opts = {}) {
+                    const url = path.startsWith('http') ? path : `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
+                    const headers = Object.assign({}, opts.headers || {});
+                    headers['Accept'] = headers['Accept'] || 'application/json';
+
+                    const token = localStorage.getItem(TOKEN_KEY);
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    let body = opts.body;
+                    if (body && typeof body === 'object' && !(body instanceof FormData)) {
+                        headers['Content-Type'] = 'application/json';
+                        body = JSON.stringify(body);
+                    }
+
+                    const res = await fetch(url, Object.assign({}, opts, { headers, body }));
+                    const ct = (res.headers.get('content-type') || '').toLowerCase();
+
+                    if (!res.ok) {
+                        const txt = await res.text();
+                        let parsed;
+                        try { parsed = JSON.parse(txt); } catch { parsed = txt; }
+                        throw parsed;
+                    }
+
+                    if (ct.includes('application/json')) return res.json();
+                    const txt = await res.text();
+                    try { return JSON.parse(txt); } catch { return txt; }
+                },
+
+                async loadProducts() {
+                    try {
+                        const data = await this.apiFetch('/api/products', { method: 'GET' });
+                        if (!Array.isArray(data)) throw new Error('Invalid response');
+                        this.products = data.map(p => ({ ...p, addedFeedback: false }));
+                    } catch (err) {
+                        console.error('loadProducts error', err);
+                        this.errorMessage = 'تعذّر تحميل المنتجات من الخادم.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                addToCart(product) {
+                    try {
+                        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        const list = Array.isArray(cart) ? cart : [];
+                        const id = Number(product.id) || 0;
+                        const idx = list.findIndex(item => Number(item.id) === id);
+                        if (idx > -1) {
+                            list[idx].quantity = (Number(list[idx].quantity) || 0) + 1;
+                        } else {
+                            list.push({
+                                id,
+                                name: product.name || 'بدون اسم',
+                                price: Number(product.price) || 0,
+                                quantity: 1,
+                                storeId: product.storeId || (product.store && product.store.id) || null,
+                                storeName: product.storeName || (product.store && product.store.name) || '',
+                                imageUrl: product.imageUrl || ''
+                            });
+                        }
+                        localStorage.setItem('cart', JSON.stringify(list));
+                        this.updateCartCount();
+                        if (window.updateNavCartCount) window.updateNavCartCount();
+                        product.addedFeedback = true;
+                        setTimeout(() => product.addedFeedback = false, 900);
+                    } catch (e) { console.error(e); }
+                },
+
+                updateCartCount() {
+                    try {
+                        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        this.cartCount = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                    } catch (e) { console.error(e); this.cartCount = 0; }
+                },
+
+                async restoreAuth() {
+                    const token = localStorage.getItem(TOKEN_KEY);
+                    if (!token) {
+                        this.user = null;
+                        localStorage.removeItem(USER_KEY);
+                        return;
+                    }
+                    try {
+                        const resp = await this.apiFetch('/api/auth/me', { method: 'GET' });
+                        if (resp && resp.user) {
+                            this.user = resp.user;
+                            localStorage.setItem(USER_KEY, JSON.stringify(resp.user));
+                            if (resp.user.store) this.applyStoreTheme(resp.user.store);
+                        } else {
+                            if (resp && resp.id) {
+                                this.user = resp;
+                                localStorage.setItem(USER_KEY, JSON.stringify(resp));
+                                if (resp.store) this.applyStoreTheme(resp.store);
+                            } else {
+                                this.user = null;
+                                localStorage.removeItem(USER_KEY);
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('restoreAuth failed — clearing token', err);
+                        localStorage.removeItem(TOKEN_KEY);
+                        localStorage.removeItem(USER_KEY);
+                        this.user = null;
+                    }
+                },
+
+                applyStoreTheme(store) {
+                    try {
+                        if (!store) return;
+                        const root = document.documentElement;
+                        const theme = store.themeColor || '#54733b';
+                        const accent = store.accentColor || '#dfeedd';
+                        root.style.setProperty('--store-theme-color', theme);
+                        root.style.setProperty('--store-accent-color', accent);
+
+                        let meta = document.querySelector('meta[name="theme-color"]');
+                        if (!meta) {
+                            meta = document.createElement('meta');
+                            meta.name = 'theme-color';
+                            document.head.appendChild(meta);
+                        }
+                        meta.content = theme;
+
+                        if (store.logoUrl) {
+                            const logoEl = document.getElementById('store-logo');
+                            if (logoEl) {
+                                if (logoEl.tagName === 'IMG') logoEl.src = store.logoUrl;
+                                else logoEl.style.backgroundImage = `url("${store.logoUrl}")`;
+                            }
+                        }
+                        if (store.name) document.title = `${store.name} • Marketplace`;
+                    } catch (e) { console.error('applyStoreTheme error', e); }
+                },
+
+                async onLogin() {
+                    try {
+                        const resp = await this.apiFetch('/api/auth/login', { method: 'POST', body: { email: this.login.email, password: this.login.password } });
+                        if (resp && resp.token) {
+                            localStorage.setItem(TOKEN_KEY, resp.token);
+                            await this.restoreAuth();
+                            if (window.renderSiteNavbar) window.renderSiteNavbar();
+                            this.showLogin = false;
+                            this.login.password = '';
+                            await this.loadProducts();
+                        }
+                    } catch (err) {
+                        console.error('login error', err);
+                        alert((err && err.error) || 'فشل تسجيل الدخول');
+                    }
+                },
+
+                async onRegister() {
+                    try {
+                        const payload = {
+                            email: this.register.email,
+                            password: this.register.password,
+                            name: this.register.name,
+                            storeName: this.register.storeName,
+                            themeColor: this.register.themeColor || undefined,
+                            accentColor: this.register.accentColor || undefined,
+                            logoUrl: this.register.logoUrl || undefined,
+                            description: this.register.description || undefined
+                        };
+                        await this.apiFetch('/api/auth/register-seller', { method: 'POST', body: payload });
+                        const loginResp = await this.apiFetch('/api/auth/login', { method: 'POST', body: { email: payload.email, password: payload.password } });
+                        if (loginResp && loginResp.token) {
+                            localStorage.setItem(TOKEN_KEY, loginResp.token);
+                            await this.restoreAuth();
+                            if (window.renderSiteNavbar) window.renderSiteNavbar();
+                        }
+                        this.register = { email: '', password: '', name: '', storeName: '', themeColor: '', accentColor: '', logoUrl: '', description: '' };
+                        this.showRegister = false;
+                        await this.loadProducts();
+                    } catch (err) {
+                        console.error('register error', err);
+                        alert((err && err.error) || 'فشل التسجيل');
+                    }
+                },
+
+                openStoreSettings() {
+                    this.showSettings = true;
+                    if (this.user && this.user.store) {
+                        const s = this.user.store;
+                        this.settings = { name: s.name || '', themeColor: s.themeColor || '', accentColor: s.accentColor || '', logoUrl: s.logoUrl || '', description: s.description || '' };
+                    } else {
+                        this.settings = { name: '', themeColor: '', accentColor: '', logoUrl: '', description: '' };
+                    }
+                },
+
+                async updateStoreSettings() {
+                    try {
+                        const payload = {
+                            name: this.settings.name,
+                            themeColor: this.settings.themeColor,
+                            accentColor: this.settings.accentColor,
+                            logoUrl: this.settings.logoUrl,
+                            description: this.settings.description
+                        };
+                        const updated = await this.apiFetch('/api/store/settings', { method: 'PUT', body: payload });
+                        alert('تم حفظ إعدادات المتجر بنجاح');
+                        this.showSettings = false;
+                        await this.restoreAuth();
+                    } catch (err) {
+                        console.error('updateStoreSettings error', err);
+                        alert((err && err.error) || 'فشل حفظ الإعدادات');
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
