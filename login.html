@@ -71,7 +71,16 @@
             const result = await response.json();
             if (!response.ok) throw new Error(result.error);
             if (mode === 'register') { message.textContent = 'تم إنشاء الحساب. سجّل الدخول الآن.'; setMode('login'); }
-            else window.location.href = new URLSearchParams(location.search).get('next') || (['admin', 'vendor'].includes(result.role) ? 'admin.html' : 'products.html');
+            else {
+                localStorage.setItem('saas_token', result.token);
+                localStorage.setItem('saas_user', JSON.stringify(result.user));
+                const roles = String(result.user && result.user.role || '').split(',').map(part => part.trim());
+                const next = new URLSearchParams(location.search).get('next')
+                    || (roles.includes('admin') ? 'admin.html'
+                        : roles.includes('store_owner') ? 'dashboard.html'
+                        : 'products.html');
+                window.location.href = next;
+            }
         } catch (error) { message.textContent = error.message || 'تعذر تنفيذ العملية'; message.style.color = '#c0392b'; }
     };
 </script>
