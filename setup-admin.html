@@ -3,153 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعداد المدير الأول</title>
+    <meta http-equiv="refresh" content="3;url=login.html">
+    <title>إعداد المدير</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
-            padding: 24px;
             min-height: 100vh;
             display: grid;
             place-items: center;
             background: radial-gradient(circle at top right, #e4efdc 0, transparent 35%), #f6f7f0;
             color: #1f2a24;
             font-family: Cairo, Segoe UI, sans-serif;
+            padding: 24px;
         }
-
         main {
-            width: min(100%, 440px);
+            width: min(100%, 420px);
             background: #fff;
-            padding: 34px;
+            padding: 32px;
             border: 1px solid #e1e9de;
             border-radius: 22px;
             box-shadow: 0 22px 50px #30493618;
-        }
-
-        h1 {
-            color: #54733b;
-            margin: 0 0 8px;
-            font-size: 1.8rem;
-        }
-
-        p {
-            color: #6b7280;
-            line-height: 1.6;
-        }
-
-        label {
-            display: block;
-            margin: 14px 0 6px;
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px;
-            border: 1px solid #e1e9de;
-            border-radius: 10px;
-            font: inherit;
-            background: #fcfdfb;
-        }
-
-        button {
-            width: 100%;
-            margin-top: 20px;
-            padding: 14px;
-            border: 0;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #54733b, #769653);
-            color: #fff;
-            font: inherit;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #message {
-            min-height: 24px;
-            margin-top: 14px;
             text-align: center;
         }
-
-        a {
-            display: block;
-            margin-top: 18px;
-            text-align: center;
-            color: #556b2f;
-        }
+        h1 { color: #54733b; margin: 0 0 10px; font-size: 1.5rem; }
+        p { color: #6b7280; line-height: 1.7; margin: 0 0 20px; }
+        a { color: #556b2f; font-weight: 600; }
     </style>
 </head>
 <body>
     <main>
-        <h1>إعداد المدير الأول</h1>
-        <p>هذه الصفحة متاحة لإنشاء أول حساب مدير فقط. بعد إنشائه لن يمكن إنشاء مدير آخر من هنا.</p>
-        <form id="form">
-            <label for="name">اسم المدير</label><input id="name" required>
-            <label for="email">البريد الإلكتروني</label><input id="email" type="email" required>
-            <label for="password">كلمة المرور</label><input id="password" type="password" minlength="8" required>
-            <button type="submit">إنشاء حساب المدير</button>
-        </form>
-        <div id="message" role="status"></div>
+        <h1>حساب المدير يُنشأ من إعدادات النشر</h1>
+        <p>لم تعد هذه الصفحة تُستخدم لإنشاء المدير. يتم إنشاء حساب المدير تلقائياً عند تشغيل الخادم عبر متغيرات البيئة.</p>
         <a href="login.html">العودة إلى تسجيل الدخول</a>
     </main>
-    <script>// Base API host — update if your server uses another host/port
-    const API_BASE = 'http://localhost:3000';
-
-    const form = document.getElementById('form');
-    const message = document.getElementById('message');
-
-    form.onsubmit = async event => {
-        event.preventDefault();
-        message.textContent = '';
-        message.style.color = '';
-
-        const payload = {
-            name: document.getElementById('name').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            password: document.getElementById('password').value
-        };
-
-        // POST to the exact route defined in server.js: /api/auth/setup-admin
-        const url = API_BASE + '/api/auth/setup-admin';
-
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const ct = res.headers.get('content-type') || '';
-
-            if (ct.includes('application/json')) {
-                const json = await res.json();
-                if (!res.ok) {
-                    // display server error message (conflict, validation, etc.)
-                    message.textContent = json.error || json.message || 'تعذر إنشاء المدير';
-                    message.style.color = '#c0392b';
-                    return;
-                }
-                // success
-                message.textContent = 'تم إنشاء المدير. يمكنك تسجيل الدخول الآن.';
-                message.style.color = '#2e7d32';
-                form.reset();
-                return;
-            }
-
-            // If server returned non-JSON (HTML or text), show snippet for debugging
-            const text = await res.text();
-            const snippet = text ? (text.substring(0, 500) + (text.length > 500 ? '…' : '')) : ('HTTP ' + res.status);
-            throw new Error('Unexpected server response: ' + snippet);
-        } catch (err) {
-            console.error('Setup admin error:', err);
-            message.textContent = err.message || 'تعذر إنشاء المدير';
-            message.style.color = '#c0392b';
-        }
-    };</script>
 </body>
 </html>
