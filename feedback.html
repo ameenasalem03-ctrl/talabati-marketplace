@@ -109,6 +109,11 @@
 
             <label for="feedbackText" style="font-weight: 600; font-size: 14px;">اكتب مقترحك أو رأيك هنا:</label>
             <textarea id="feedbackText" placeholder="اكتب مقترحك بأسلوب فصيح ومهذب..."></textarea>
+
+            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:14px;color:#334155;line-height:1.5;">
+                <input type="checkbox" id="feedbackConsent" style="margin-top:4px;">
+                <span>أوافق على عرض رأيي واسم حسابي (إن وُجد) ضمن قسم «آراء العملاء والمشترين» على الصفحة الرئيسية.</span>
+            </label>
             
             <button type="submit" id="submitBtn">إرسال المقترح</button>
             <div id="successMsg" class="success-msg">شكراً لك! تم استقبال مقترحك وحفظه بنجاح.</div>
@@ -169,7 +174,8 @@
                         rating,
                         audience,
                         comment: text,
-                        suggestion: text
+                        suggestion: text,
+                        publishConsent: document.getElementById('feedbackConsent').checked
                     })
                 });
 

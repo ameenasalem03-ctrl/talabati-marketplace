@@ -720,7 +720,7 @@ app.get('/api/admin/orders', requireAuth(['admin']), async (req, res) => {
 // --- Feedback (public submit, admin review) ---
 app.post('/api/feedback', async (req, res) => {
     try {
-        const { audience, rating, comment, suggestion } = req.body || {};
+        const { audience, rating, comment, suggestion, publishConsent } = req.body || {};
         const text = String(comment || '').trim();
         if (!text) return res.status(400).json({ error: 'اكتب رأيك أو مقترحك أولاً' });
         if (text.length > 1000) return res.status(400).json({ error: 'الرأي طويل جداً (الحد 1000 حرف)' });
@@ -736,6 +736,7 @@ app.post('/api/feedback', async (req, res) => {
                 rating: score,
                 comment: text,
                 suggestion: suggestionText && suggestionText !== text ? suggestionText : null,
+                publishConsent: publishConsent === true || publishConsent === 'true',
                 userId: user ? user.id : null
             }
         });
@@ -743,6 +744,32 @@ app.post('/api/feedback', async (req, res) => {
     } catch (err) {
         console.error('POST /api/feedback error', err);
         res.status(500).json({ error: 'تعذر حفظ الرأي' });
+    }
+});
+
+app.get('/api/feedback/public', async (req, res) => {
+    try {
+        const items = await prisma.feedback.findMany({
+            where: { publishConsent: true, rating: { gte: 4 } },
+            orderBy: { createdAt: 'desc' },
+            take: 12,
+            include: { user: { select: { name: true } } }
+        });
+        const reviews = items
+            .filter(item => String(item.comment || '').trim().length > 0)
+            .slice(0, 3)
+            .map(item => ({
+                id: item.id,
+                rating: item.rating,
+                comment: String(item.comment).trim(),
+                audience: item.audience,
+                name: (item.user && item.user.name) ? item.user.name : 'عميل من المنصة',
+                createdAt: item.createdAt
+            }));
+        res.json({ items: reviews });
+    } catch (err) {
+        console.error('GET /api/feedback/public error', err);
+        res.status(500).json({ error: 'Failed to load reviews' });
     }
 });
 

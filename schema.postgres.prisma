@@ -86,6 +86,7 @@ model Feedback {
   rating     Int      @default(5)
   comment    String?
   suggestion String?
+  publishConsent Boolean @default(false)
   readAt     DateTime?
   createdAt  DateTime @default(now())
 

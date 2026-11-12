@@ -593,48 +593,24 @@
                 </div>
             </section>
 
-            <section class="section">
+            <section class="section" v-if="testimonials.length >= 3">
                 <div class="section-head">
                     <div>
                         <span class="eyebrow">ثقة عملائنا</span>
                         <h2>آراء العملاء والمشترين</h2>
-                        <p>تجارب حقيقية من متسوّقين وأصحاب متاجر على منصة طلباتي.</p>
+                        <p>آراء حقيقية من متسوّقين وأصحاب متاجر وافقوا على نشرها.</p>
                     </div>
                 </div>
 
                 <div class="testimonial-grid">
-                    <article class="testimonial-card">
-                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
-                        <p class="testimonial-text">طلبت من ثلاثة متاجر مختلفة ووصلتني الطلبات بسرعة وبتغليف مرتب. تجربة سهلة، وسلة الشراء وفّرت عليّ الكثير من الوقت.</p>
+                    <article class="testimonial-card" v-for="t in testimonials.slice(0, 3)" :key="t.id">
+                        <span class="testimonial-stars" role="img" :aria-label="'تقييم ' + t.rating + ' من 5'">{{ starRating(t.rating) }}</span>
+                        <p class="testimonial-text">{{ t.comment }}</p>
                         <div class="testimonial-person">
-                            <span class="testimonial-avatar" aria-hidden="true">ن</span>
+                            <span class="testimonial-avatar" aria-hidden="true">{{ avatarLetter(t.name) }}</span>
                             <div>
-                                <strong>نورة الأنصاري</strong>
-                                <span>مشترية — المنامة</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="testimonial-card">
-                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
-                        <p class="testimonial-text">أجمل ما في طلباتي أن كل المتاجر المحلية في مكان واحد. الأسعار واضحة بالدينار البحريني والطلب يصل مباشرة إلى المتجر دون وسطاء.</p>
-                        <div class="testimonial-person">
-                            <span class="testimonial-avatar" aria-hidden="true">ي</span>
-                            <div>
-                                <strong>يوسف الدوسري</strong>
-                                <span>مشترٍ — الرفاع</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="testimonial-card">
-                        <span class="testimonial-stars" role="img" aria-label="تقييم 5 من 5">★★★★★</span>
-                        <p class="testimonial-text">فتحت متجري خلال دقائق وبدأت أستقبل الطلبات في اليوم نفسه. لوحة البائع بسيطة وتسهّل متابعة المنتجات والطلبات أولاً بأول.</p>
-                        <div class="testimonial-person">
-                            <span class="testimonial-avatar" aria-hidden="true">م</span>
-                            <div>
-                                <strong>مريم الخال</strong>
-                                <span>صاحبة متجر — المحرق</span>
+                                <strong>{{ t.name }}</strong>
+                                <span>{{ audienceLabel(t.audience) }}</span>
                             </div>
                         </div>
                     </article>
@@ -679,6 +655,7 @@
                     loading: true,
                     errorMessage: '',
                     user: null,
+                    testimonials: [],
                     year: new Date().getFullYear()
                 };
             },
@@ -699,10 +676,31 @@
             mounted() {
                 this.user = this.readUser();
                 this.loadProducts();
+                this.loadTestimonials();
             },
             methods: {
                 formatPrice(value) {
                     return (Number(value) || 0).toFixed(3) + ' د.ب';
+                },
+                starRating(rating) {
+                    const filled = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
+                    return '★★★★★'.slice(0, filled) + '☆☆☆☆☆'.slice(0, 5 - filled);
+                },
+                avatarLetter(name) {
+                    return (String(name || 'ع').trim().charAt(0)) || 'ع';
+                },
+                audienceLabel(audience) {
+                    return audience === 'vendor' ? 'صاحب متجر على المنصة' : 'مشترٍ من المنصة';
+                },
+                async loadTestimonials() {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/feedback/public`, { headers: { Accept: 'application/json' } });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        this.testimonials = Array.isArray(data.items) ? data.items : [];
+                    } catch (e) {
+                        this.testimonials = [];
+                    }
                 },
                 readUser() {
                     try {
